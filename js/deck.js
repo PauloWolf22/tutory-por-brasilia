@@ -3,7 +3,7 @@ window.Deck = (function () {
   var TOTAL = 14, cur = 0, slides = [], fragIdx = 0;
   var params = new URLSearchParams(location.search);
   var STATIC = params.has('static');
-  var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches && !params.has('animar');
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var overlayOpen = function () { return document.querySelector('.overlay.open'); };
   var hooks = { enter: [], leave: [] };
@@ -194,6 +194,6 @@ window.Deck = (function () {
     });
   }
 
-  return { init: init, go: go, next: next, prev: prev, hooks: hooks, isStatic: function () { return STATIC || REDUCED; }, openOverlay: openOverlay, current: function () { return cur; } };
+  return { init: init, go: go, next: next, prev: prev, hooks: hooks, isStatic: function () { return STATIC || REDUCED; }, isExport: function () { return STATIC; }, openOverlay: openOverlay, current: function () { return cur; } };
 })();
 document.addEventListener('DOMContentLoaded', Deck.init);

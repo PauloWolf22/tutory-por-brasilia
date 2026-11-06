@@ -146,8 +146,8 @@ window.Slides = (function () {
 
   function fim() {
     return '<section class="slide fim t-dark" data-n="14" data-theme="dark" aria-label="Slide 14">' +
-      '<div class="fim-bg"><img src="assets/img/ghost-cidade.jpg" alt=""></div><div class="fim-shade"></div>' +
-      '<div class="fim-panel"><h2 class="sr">Tutory por Brasília!</h2><canvas id="ledFinal" width="2640" height="1000" aria-hidden="true"></canvas></div>' +
+      '<div class="fim-shade"></div><svg class="fim-sym" aria-hidden="true"><use href="#i-sym"/></svg>' +
+      '<div class="fim-band"><h2 class="sr">TUTORY POR BRASÍLIA!</h2><canvas id="ledFinal" width="2880" height="540" aria-hidden="true"></canvas></div>' +
       '<div class="fim-tail in" style="--i:9"><p><b>NO MERCADO</b> DE MENTORIA <b>QUEM NÃO SE POSICIONA,</b><br><b>DESAPARECE</b> DA ESCOLHA DO MENTOR.</p>' +
       '<button class="fim-back" data-go="1" aria-label="Voltar ao início" title="Voltar ao início">' + icon('arrow') + '</button></div></section>';
   }

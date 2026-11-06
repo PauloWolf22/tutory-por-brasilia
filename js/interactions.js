@@ -76,18 +76,17 @@ window.Interactions = (function () {
   /* ---------- Letreiro final ---------- */
   function final() {
     var cv = document.getElementById('ledFinal'); if (!cv) return;
-    board = new window.Led.Board(cv, function (c, w, h) {
-      c.textBaseline = 'alphabetic'; c.textAlign = 'left';
-      var f = function (wt, sz) { return wt + ' ' + sz + 'px Gilroy'; };
-      var sz = 400;
-      c.font = f(800, sz); var a = c.measureText('Tutory').width; c.font = f(300, sz); var sp = c.measureText(' ').width, b = c.measureText('por').width;
-      var x = (w - (a + sp + b)) / 2;
-      c.font = f(800, sz); c.fillStyle = '#3B7BF5'; c.fillText('Tutory', x, 400);
-      c.font = f(300, sz); c.lineWidth = 7; c.strokeStyle = c.fillStyle = '#ffffff'; c.fillText('por', x + a + sp, 400); c.strokeText('por', x + a + sp, 400);
-      c.font = f(300, 430); var br = c.measureText('Brasília!').width; c.lineWidth = 8;
-      c.fillText('Brasília!', (w - br) / 2, 860); c.strokeText('Brasília!', (w - br) / 2, 860);
-    }, { pitch: 11, r: 4.3 });
-    window.Deck.hooks.enter.push(function (n) { if (n === 14) board.start(window.Deck.isStatic()); else board.stop(); });
+    board = new window.Led.Ticker(cv, {
+      pitch: 9, r: 3.2, speed: 430, size: 540,
+      parts: [
+        { t: 'TUTORY ', w: 800, c: '#3B7BF5' },
+        { t: 'POR ', w: 300, c: '#ffffff' },
+        { t: 'BRASÍLIA!', w: 800, c: '#ffffff' }
+      ]
+    });
+    /* prepara antes da entrada para a transição não engasgar */
+    if (!window.Deck.isExport()) setTimeout(function () { if (!board.built) board.build(false); }, 400);
+    window.Deck.hooks.enter.push(function (n) { if (n === 14) board.start(window.Deck.isExport()); else board.stop(); });
   }
 
   return {

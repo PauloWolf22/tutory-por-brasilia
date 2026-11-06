@@ -37,11 +37,10 @@ window.Led = (function () {
     requestAnimationFrame(frame);
   }
 
-  /* ---------- Letreiro de pontos ---------- */
-  function Board(canvas, draw, opt) {
-    this.cv = canvas; this.ctx = canvas.getContext('2d'); this.draw = draw;
-    this.pitch = opt.pitch || 10; this.r = opt.r || 3.6;
-    this.base = document.createElement('canvas'); this.base.width = canvas.width; this.base.height = canvas.height;
+  /* ---------- Letreiro corrido de pontos ---------- */
+  function Ticker(canvas, opt) {
+    this.cv = canvas; this.ctx = canvas.getContext('2d'); this.opt = opt;
+    this.pitch = opt.pitch; this.r = opt.r; this.speed = opt.speed;
     this.mx = -9999; this.my = -9999; this.raf = 0; this.built = false;
     var self = this;
     canvas.addEventListener('mousemove', function (e) {
@@ -49,47 +48,77 @@ window.Led = (function () {
       self.mx = (e.clientX - b.left) / b.width * canvas.width; self.my = (e.clientY - b.top) / b.height * canvas.height;
     });
     canvas.addEventListener('mouseleave', function () { self.mx = self.my = -9999; });
+    canvas.addEventListener('click', function () { self.paused = !self.paused; });
   }
-  Board.prototype.build = function () {
-    var w = this.cv.width, h = this.cv.height, p = this.pitch, r = this.r;
-    var off = document.createElement('canvas'); off.width = w; off.height = h;
+  Ticker.prototype.measure = function (c, size) {
+    var total = 0;
+    this.opt.parts.forEach(function (t) { c.font = t.w + ' ' + size + 'px Gilroy'; total += c.measureText(t.t).width; });
+    return total;
+  };
+  /* still: frase inteira na largura do letreiro, para PDF e movimento reduzido */
+  Ticker.prototype.build = function (still) {
+    var W = this.cv.width, H = this.cv.height, p = this.pitch, r = this.r, self = this;
+    var probe = document.createElement('canvas').getContext('2d');
+    var size = still ? this.opt.size * (W * 0.95) / this.measure(probe, this.opt.size) : this.opt.size;
+    var textW = this.measure(probe, size);
+    var S = still ? W : Math.ceil((textW + size * 1.1) / p) * p;
+    var off = document.createElement('canvas'); off.width = S; off.height = H;
     var o = off.getContext('2d', { willReadFrequently: true });
-    this.draw(o, w, h);
-    var data = o.getImageData(0, 0, w, h).data, g = this.base.getContext('2d');
-    g.clearRect(0, 0, w, h);
-    for (var y = p / 2; y < h; y += p) {
-      for (var x = p / 2; x < w; x += p) {
-        var i = ((y | 0) * w + (x | 0)) * 4, a = data[i + 3];
-        var lit = a > 90; g.shadowBlur = lit ? 16 : 0; g.shadowColor = lit ? 'rgb(' + data[i] + ',' + data[i + 1] + ',' + data[i + 2] + ')' : 'transparent'; g.beginPath(); g.arc(x, y, lit ? r : r * 0.62, 0, 6.2832);
-        g.fillStyle = a > 90 ? 'rgb(' + data[i] + ',' + data[i + 1] + ',' + data[i + 2] + ')' : 'rgba(59,123,245,.13)';
-        g.fill();
+    var x = still ? (W - textW) / 2 : 0, base = Math.round(H / 2 + size * 0.36);
+    o.textBaseline = 'alphabetic';
+    this.opt.parts.forEach(function (t) {
+      o.font = t.w + ' ' + size + 'px Gilroy'; o.fillStyle = o.strokeStyle = t.c; o.fillText(t.t, x, base);
+      if (t.w < 500) { o.lineWidth = size * 0.022; o.strokeText(t.t, x, base); }
+      x += o.measureText(t.t).width;
+    });
+    var data = o.getImageData(0, 0, S, H).data;
+    this.strip = document.createElement('canvas'); this.strip.width = S; this.strip.height = H;
+    var g = this.strip.getContext('2d');
+    for (var y = p / 2; y < H; y += p) {
+      for (var cx = p / 2; cx < S; cx += p) {
+        var i = ((y | 0) * S + (cx | 0)) * 4;
+        if (data[i + 3] <= 90) continue;
+        var col = 'rgb(' + data[i] + ',' + data[i + 1] + ',' + data[i + 2] + ')';
+        g.shadowBlur = 10; g.shadowColor = col; g.fillStyle = col;
+        g.beginPath(); g.arc(cx, y, r, 0, 6.2832); g.fill();
       }
     }
-    this.built = true;
+    /* pontos apagados do painel */
+    var tile = document.createElement('canvas'); tile.width = tile.height = p;
+    var tc = tile.getContext('2d'); tc.fillStyle = 'rgba(126,168,250,.1)'; tc.beginPath(); tc.arc(p / 2, p / 2, r * 0.6, 0, 6.2832); tc.fill();
+    this.base = document.createElement('canvas'); this.base.width = W; this.base.height = H;
+    var bc = this.base.getContext('2d'); bc.fillStyle = bc.createPattern(tile, 'repeat'); bc.fillRect(0, 0, W, H);
+    this.S = S; this.built = still ? 'still' : 'live';
   };
-  Board.prototype.paint = function (reveal, shimmer) {
-    var c = this.ctx, w = this.cv.width, h = this.cv.height;
-    c.clearRect(0, 0, w, h);
-    c.save(); c.beginPath(); c.rect(0, 0, w * reveal, h); c.clip(); c.drawImage(this.base, 0, 0); c.restore();
-    c.save(); c.globalCompositeOperation = 'source-atop';
-    if (reveal < 1) { var hx = w * reveal; var g0 = c.createLinearGradient(hx - 140, 0, hx, 0); g0.addColorStop(0, 'rgba(255,255,255,0)'); g0.addColorStop(1, 'rgba(255,255,255,.95)'); c.fillStyle = g0; c.fillRect(hx - 140, 0, 140, h); }
-    if (shimmer >= 0) { var sx = shimmer * (w + 600) - 300; var g1 = c.createLinearGradient(sx - 220, 0, sx + 220, 0); g1.addColorStop(0, 'rgba(255,255,255,0)'); g1.addColorStop(.5, 'rgba(255,255,255,.42)'); g1.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g1; c.fillRect(0, 0, w, h); }
-    if (this.mx > -999) { var g2 = c.createRadialGradient(this.mx, this.my, 0, this.mx, this.my, 240); g2.addColorStop(0, 'rgba(255,255,255,.9)'); g2.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g2; c.fillRect(0, 0, w, h); }
-    c.restore();
+  Ticker.prototype.paint = function (offset) {
+    var c = this.ctx, W = this.cv.width, H = this.cv.height, S = this.S;
+    c.clearRect(0, 0, W, H);
+    c.drawImage(this.base, 0, 0);
+    var x = -offset; if (offset >= 0) x = -(offset % S);
+    for (; x < W; x += S) c.drawImage(this.strip, x, 0);
+    if (this.mx > -999) {
+      c.save(); c.globalCompositeOperation = 'source-atop';
+      var g = c.createRadialGradient(this.mx, this.my, 0, this.mx, this.my, 220);
+      g.addColorStop(0, 'rgba(255,255,255,.85)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = g; c.fillRect(0, 0, W, H); c.restore();
+    }
   };
-  Board.prototype.start = function (still) {
-    var self = this; if (!this.built) this.build();
+  Ticker.prototype.start = function (still) {
+    var self = this, want = still ? 'still' : 'live';
+    if (this.built !== want) this.build(still);
     cancelAnimationFrame(this.raf);
-    if (still) { this.paint(1, -1); return; }
-    var t0 = performance.now(), DUR = 1700, CYCLE = 5200;
+    if (still) { this.paint(0); return; }
+    /* entra pela direita e anda de ponto em ponto, como um painel real */
+    var t0 = performance.now(), W = this.cv.width, p = this.pitch;
     (function loop(now) {
-      var e = now - t0, rev = Math.min(1, e / DUR);
-      var sh = e > DUR ? ((e - DUR) % CYCLE) / 1800 : -1;
-      self.paint(1 - Math.pow(1 - rev, 2), sh >= 0 && sh <= 1 ? sh : -1);
+      if (self.paused) { t0 += now - (self.lastT || now); }
+      self.lastT = now;
+      var o = (now - t0) / 1000 * self.speed - W;
+      self.paint(Math.floor(o / p) * p);
       self.raf = requestAnimationFrame(loop);
     })(t0);
   };
-  Board.prototype.stop = function () { cancelAnimationFrame(this.raf); };
+  Ticker.prototype.stop = function () { cancelAnimationFrame(this.raf); };
 
-  return { initWipe: initWipe, wipe: wipe, Board: Board };
+  return { initWipe: initWipe, wipe: wipe, Ticker: Ticker };
 })();
