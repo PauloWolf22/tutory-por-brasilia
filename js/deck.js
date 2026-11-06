@@ -1,6 +1,6 @@
 /* Motor da apresentação: palco 16:9, navegação, teclado, tela cheia, progresso, build de fragmentos. */
 window.Deck = (function () {
-  var TOTAL = 14, cur = 0, slides = [], fragIdx = 0;
+  var TOTAL = 25, cur = 0, slides = [], fragIdx = 0;
   var params = new URLSearchParams(location.search);
   var STATIC = params.has('static');
   /* Decisão do Paulo: animações ligadas mesmo com movimento reduzido no sistema. Para desligar: ?semanimacao */

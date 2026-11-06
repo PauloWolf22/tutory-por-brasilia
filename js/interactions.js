@@ -1,4 +1,4 @@
-/* Interações por slide: regiões (4), vias (5), detalhe de ponto (6-11), letreiro LED (14), tilt (2), acionamento do outdoor (1). */
+/* Interações por slide: regiões (4), vias (5), detalhe de ponto (6-11), letreiro LED (25), tilt (2), acionamento do outdoor (1). */
 window.Interactions = (function () {
   var D = window.DECK, detailList = [], detailPos = 0, board = null;
 
@@ -48,8 +48,8 @@ window.Interactions = (function () {
     host.innerHTML =
       '<div class="d-photo"><img src="assets/img/pontos/' + p.img + '.jpg" alt="Painel ' + p.code + '"></div>' +
       '<div class="d-info"><span class="d-op">' + p.op + '</span>' +
-      '<h3>' + p.name[0] + (p.name[0] === 'EP' || p.name[0] === 'AERO' || p.name[0] === 'ESTRU' ? '' : ' ') + '<b>' + p.name[1] + '</b></h3>' +
-      '<div class="d-specs">' + window.Slides.specs(p) + '</div>' +
+      '<h3>' + p.name[0] + (p.name[0].length <= 2 || p.name[0] === 'AERO' || p.name[0] === 'ESTRU' ? '' : ' ') + '<b>' + p.name[1] + '</b></h3>' +
+      '<div class="d-specs' + (p.more ? ' dense' : '') + '">' + window.Slides.specs(p, true) + '</div>' +
       '<div class="d-nav"><button data-step="-1" aria-label="Ponto anterior"><svg class="ic" aria-hidden="true"><use href="#i-prev"/></svg></button>' +
       '<span>' + (detailPos + 1) + ' / ' + detailList.length + '</span>' +
       '<button data-step="1" aria-label="Próximo ponto"><svg class="ic" aria-hidden="true"><use href="#i-next"/></svg></button></div></div>';
@@ -86,7 +86,7 @@ window.Interactions = (function () {
     });
     /* prepara antes da entrada para a transição não engasgar */
     if (!window.Deck.isExport()) setTimeout(function () { if (!board.built) board.build(false); }, 400);
-    window.Deck.hooks.enter.push(function (n) { if (n === 14) board.start(window.Deck.isExport()); else board.stop(); });
+    window.Deck.hooks.enter.push(function (n) { if (n === 25) board.start(window.Deck.isExport()); else board.stop(); });
   }
 
   return {

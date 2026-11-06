@@ -1,4 +1,4 @@
-/* Monta os 14 slides a partir de js/data.js. Cada função = um layout nascido do conteúdo. */
+/* Monta os 25 slides a partir de js/data.js. Cada função = um layout nascido do conteúdo. */
 window.Slides = (function () {
   var D = window.DECK;
   var icon = function (n, c) { return '<svg class="ic ' + (c || '') + '" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; };
@@ -79,14 +79,17 @@ window.Slides = (function () {
   function meter(label, val, n, max) {
     return '<div class="ln mt" title="' + label + ' ' + val + '"><b>' + label + '</b> <span data-count="' + val + '">' + val + '</span><span class="m"><i style="--w:' + (n / max * 100).toFixed(1) + '%"></i></span></div>';
   }
-  function specs(p) {
+  function specs(p, full) {
     return line('Código:', p.code) + line('Formato:', p.format) + line('Medida do painel:', p.size) + line('Localização:', p.loc) +
       (p.vt ? line('Tempo do VT:', p.vt) : '') +
       (p.imp ? meter('Impacto/dia:', p.imp, p.impN, D.maxImp) : '') +
-      meter('Veiculo/dia:', p.vei, p.veiN, D.maxVei);
+      (p.vei ? meter('Veiculo/dia:', p.vei, p.veiN, D.maxVei) : '') +
+      (p.cardExtra ? p.cardExtra.map(function (t) { return '<div class="ln">' + t.replace(/^([^:]*:)/, '<b>$1</b>') + '</div>'; }).join('') : '') +
+      (full && p.more ? p.more.map(function (m) { return line(m[0], m[1]); }).join('') : '');
   }
   /* Enquadra a foto preservando o recorte do slide original, sem distorcer */
   function photo(p, w, h) {
+    if (!p.W) return '<img class="fit" loading="lazy" src="assets/img/pontos/' + p.img + '.jpg" alt="Painel ' + p.code + ', ' + p.name.join(' ') + '">';
     var s = Math.max(w / 320, h / p.H, w / p.W);
     var left = Math.min(0, Math.max(w - p.W * s, w / 2 - p.cx * s));
     var top = Math.min(0, Math.max(h - p.H * s, h / 2 - p.cy * s));
@@ -95,16 +98,26 @@ window.Slides = (function () {
   function card(p, i, w) {
     return '<article class="card in" style="--i:' + (i + 3) + '"><button class="card-hit" data-point="' + p.id + '" aria-label="Ampliar ' + p.code + '">' +
       '<div class="card-ph">' + photo(p, w, 300) + (p.tag ? '<span class="card-tag">' + p.op + '</span>' : '') + '</div>' +
-      '<div class="card-name">' + ring + '<h3>' + p.name[0] + '<b>' + (p.name[0].length > 2 && p.name[0] !== 'AERO' && p.name[0] !== 'ESTRU' ? ' ' : '') + p.name[1] + '</b></h3></div></button>' +
+      '<div class="card-name">' + ring + '<h3' + (p.name.join('').length >= 20 ? ' class="long"' : '') + '>' + p.name[0] + '<b>' + (p.name[0].length > 2 && p.name[0] !== 'AERO' && p.name[0] !== 'ESTRU' ? ' ' : '') + p.name[1] + '</b></h3></div></button>' +
       '<div class="card-body">' + specs(p) + '</div></article>';
   }
   function offer(n, theme, titleHtml, intro, ghost) {
     var pts = D.points.filter(function (p) { return p.slide === n; });
-    var w = pts.length === 4 ? 417 : 332;
-    return '<section class="slide offer t-' + theme + ' n' + pts.length + '" data-n="' + n + '" data-theme="' + theme + '" aria-label="Slide ' + n + '">' +
+    var w = pts.length === 3 ? 564 : pts.length === 4 ? 417 : 332;
+    return '<section class="slide offer t-' + theme + ' n' + pts.length + '" data-n="' + n + '" data-theme="' + theme.split(' ')[0] + '" aria-label="Slide ' + n + '">' +
       (ghost ? '<div class="offer-ghost"><img src="assets/img/' + ghost + '" alt=""></div>' : '') +
       '<header class="offer-head"><h2 class="in" style="--i:1">' + titleHtml + '</h2><div class="in" style="--i:2"><p>' + intro + '</p></div></header>' +
       '<div class="cards">' + pts.map(function (p, i) { return card(p, i, w); }).join('') + '</div></section>';
+  }
+  /* Propostas recebidas: abre o PDF original */
+  function anexos() {
+    return '<section class="slide offer t-dark ax" data-n="22" data-theme="dark" aria-label="Slide 22">' +
+      '<header class="offer-head"><h2 class="in" style="--i:1"><b class="acc">Propostas</b><br><b>recebidas</b></h2><div class="in" style="--i:2"><p>Clique para abrir cada proposta em PDF.</p></div></header>' +
+      '<div class="cards ax-grid">' + D.anexos.map(function (a, i) {
+        return '<a class="card ax-card in" style="--i:' + (i + 3) + '" href="assets/anexos/' + a.file + '.pdf" target="_blank" rel="noopener">' +
+          '<span class="ax-ph"><img loading="lazy" src="assets/img/anexos/' + a.file + '.jpg" alt=""></span>' +
+          '<span class="ax-txt"><strong>' + a.emp + '</strong><em>' + a.doc + '</em>' + a.lines.map(function (l) { return '<small>' + l + '</small>'; }).join('') + '</span></a>';
+      }).join('') + '</div></section>';
   }
   function title(fmt, op) { return '<b class="acc">Propostas</b><br><b>' + fmt + '</b><br><span class="acc">' + op + '</span>'; }
 
@@ -117,7 +130,7 @@ window.Slides = (function () {
         '<div class="price-v"><small>Valor médio mensal:</small><div class="pill"><sup>R$</sup>' + p.a + ' <span>a</span> <sup>R$</sup>' + p.b + '</div>' +
         '<div class="range" title="R$' + p.a + ' a R$' + p.b + '"><i style="--a:' + ax(p.min) + ';--b:' + ax(p.max) + '"></i></div></div></article>';
     }).join('');
-    return '<section class="slide s12 t-ice" data-n="12" data-theme="ice" aria-label="Slide 12">' +
+    return '<section class="slide s12 t-ice" data-n="23" data-theme="ice" aria-label="Slide 23">' +
       '<div class="offer-ghost"><img src="assets/img/ghost-cidade.jpg" alt=""></div><svg class="ghost-sym" aria-hidden="true"><use href="#i-sym"/></svg>' +
       '<div class="s12-l"><h2 class="in" style="--i:1">Variações<br><b>de Valores</b></h2>' +
       '<p class="in" style="--i:2">Os preços de mídia exterior em Brasília variam conforme localização, formato, período de exibição e fluxo de pessoas/veículos na área. Regiões como Eixo Monumental, Setor Comercial Sul, Lago Sul, Asa Norte e principais vias de acesso ao Plano Piloto apresentam maior valor agregado devido ao alto impacto visual.</p>' +
@@ -137,7 +150,7 @@ window.Slides = (function () {
         '<span class="pl-total" title="R$ ' + p.total + '"><b>R$ <span data-count="' + p.total + '">' + p.total + '</span></b><span class="m"><i style="--w:' + (p.n / max * 100).toFixed(1) + '%"></i></span></span>' +
         '</article>';
     }).join('');
-    return '<section class="slide plano t-dark" data-n="13" data-theme="dark" aria-label="Slide 13">' +
+    return '<section class="slide plano t-dark" data-n="24" data-theme="dark" aria-label="Slide 24">' +
       '<div class="pl-bg"><img src="assets/img/ghost-cidade.jpg" alt=""></div>' +
       '<header class="pl-head"><div>' + tag(1) + '<h2 class="in" style="--i:2">Plano <b>fechado</b></h2></div>' +
       '<div class="pl-sum in" style="--i:3"><small>Total</small><strong>R$ <span data-count="' + D.planTotal + '">' + D.planTotal + '</span></strong></div></header>' +
@@ -145,7 +158,7 @@ window.Slides = (function () {
   }
 
   function fim() {
-    return '<section class="slide fim t-dark" data-n="14" data-theme="dark" aria-label="Slide 14">' +
+    return '<section class="slide fim t-dark" data-n="25" data-theme="dark" aria-label="Slide 25">' +
       '<div class="fim-shade"></div><svg class="fim-sym" aria-hidden="true"><use href="#i-sym"/></svg>' +
       '<div class="fim-band"><h2 class="sr">TUTORY POR BRASÍLIA!</h2><canvas id="ledFinal" width="2880" height="540" aria-hidden="true"></canvas></div>' +
       '<div class="fim-tail in" style="--i:9"><p><b>NO MERCADO</b> DE MENTORIA <b>QUEM NÃO SE POSICIONA,</b><br><b>DESAPARECE</b> DA ESCOLHA DO MENTOR.</p>' +
@@ -162,6 +175,17 @@ window.Slides = (function () {
         offer(9, 'dark', title('LED e Front Light', 'VISUPLAC'), D.intro.vis) +
         offer(10, 'deep', title('LED e Front Light', 'U’PIANO'), D.intro.up) +
         offer(11, 'deep', title('LED e Front Light', 'U’PIANO'), D.intro.up) +
+        offer(12, 'ice', title('Front Light', 'BR PAINÉIS'), D.intro.br, 'ghost-br1.jpg') +
+        offer(13, 'ice', title('Front Light', 'BR PAINÉIS'), D.intro.br, 'ghost-br2.jpg') +
+        offer(14, 'dark', title('Front Light', 'VISUPLAC'), D.intro.vis) +
+        offer(15, 'dark', title('Relógio', 'VISUPLAC'), D.intro.vis) +
+        offer(16, 'dark', title('Relógio', 'VISUPLAC'), D.intro.vis) +
+        offer(17, 'deep long', title('LED, Empena e Front Light', 'U’PIANO e SCA MÍDIA'), D.intro.up) +
+        offer(18, 'ice', title('Front Light', 'RB OOH'), D.intro.rbf) +
+        offer(19, 'ice', title('Front Light', 'RB OOH'), D.intro.rbf) +
+        offer(20, 'ice', title('LED', 'RB OOH'), D.intro.rbl) +
+        offer(21, 'ice', title('LED', 'RB OOH'), D.intro.rbl) +
+        anexos() +
         s12() + plano() + fim();
     }
   };

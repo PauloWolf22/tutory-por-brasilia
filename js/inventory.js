@@ -13,10 +13,10 @@ window.Inventory = (function () {
     el.innerHTML = list.length ? list.map(function (p, i) {
       return '<button class="inv-row" data-i="' + i + '" style="--r:' + Math.min(i, 12) + '">' +
         '<span class="th"><img src="assets/img/pontos/' + p.img + '.jpg" alt="" loading="lazy"></span>' +
-        '<span class="nm">' + p.name[0] + (p.name[0] === 'EP' || p.name[0] === 'AERO' || p.name[0] === 'ESTRU' ? '' : ' ') + '<b>' + p.name[1] + '</b><small>' + p.loc + '</small></span>' +
+        '<span class="nm">' + p.name[0] + (p.name[0].length <= 2 || p.name[0] === 'AERO' || p.name[0] === 'ESTRU' ? '' : ' ') + '<b>' + p.name[1] + '</b><small>' + p.loc + '</small></span>' +
         '<span class="cd">' + p.code + '</span><span class="fm">' + p.format + '</span><span class="sz">' + p.size + '</span><span class="op">' + p.op + '</span>' +
         '<span class="vl">' + (p.imp || '–') + '</span>' +
-        '<span class="vl v"><b>' + p.vei + '</b><span class="m"><i style="--w:' + (p.veiN / D.maxVei * 100).toFixed(1) + '%"></i></span></span></button>';
+        '<span class="vl v"><b>' + (p.vei || '–') + '</b><span class="m"><i style="--w:' + (p.veiN / D.maxVei * 100).toFixed(1) + '%"></i></span></span></button>';
     }).join('') : '<p class="inv-empty">Nenhum ponto com esse filtro.</p>';
     document.getElementById('invCount').textContent = list.length + (list.length === 1 ? ' ponto' : ' pontos');
     document.querySelectorAll('#inv [data-f]').forEach(function (b) { b.classList.toggle('on', st[b.dataset.f] === b.dataset.v); });
@@ -27,8 +27,8 @@ window.Inventory = (function () {
   }
 
   function init() {
-    document.getElementById('fOp').innerHTML = chips('op', [['all', 'Todos'], ['BR PAINÉIS', 'BR PAINÉIS'], ['VISUPLAC', 'VISUPLAC'], ['U’PIANO', 'U’PIANO']]);
-    document.getElementById('fFmt').innerHTML = chips('fmt', [['all', 'Todos'], ['OUTDOOR', 'OUTDOOR'], ['FRONT LIGHT', 'FRONT LIGHT'], ['LED', 'LED'], ['RELÓGIO', 'RELÓGIO']]);
+    document.getElementById('fOp').innerHTML = chips('op', [['all', 'Todos'], ['BR PAINÉIS', 'BR PAINÉIS'], ['VISUPLAC', 'VISUPLAC'], ['U’PIANO', 'U’PIANO'], ['SCA MÍDIA', 'SCA MÍDIA'], ['RB OOH', 'RB OOH']]);
+    document.getElementById('fFmt').innerHTML = chips('fmt', [['all', 'Todos'], ['OUTDOOR', 'OUTDOOR'], ['FRONT LIGHT', 'FRONT LIGHT'], ['LED', 'LED'], ['RELÓGIO', 'RELÓGIO'], ['EMPENA', 'EMPENA']]);
     document.getElementById('fSort').innerHTML = chips('sort', [['vei', 'Veiculo/dia'], ['imp', 'Impacto/dia']]);
     var inv = document.getElementById('inv');
     inv.addEventListener('click', function (e) {
