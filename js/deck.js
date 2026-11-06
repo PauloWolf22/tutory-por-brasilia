@@ -3,7 +3,8 @@ window.Deck = (function () {
   var TOTAL = 14, cur = 0, slides = [], fragIdx = 0;
   var params = new URLSearchParams(location.search);
   var STATIC = params.has('static');
-  var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches && !params.has('animar');
+  /* Decisão do Paulo: animações ligadas mesmo com movimento reduzido no sistema. Para desligar: ?semanimacao */
+  var REDUCED = params.has('semanimacao');
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var overlayOpen = function () { return document.querySelector('.overlay.open'); };
   var hooks = { enter: [], leave: [] };
