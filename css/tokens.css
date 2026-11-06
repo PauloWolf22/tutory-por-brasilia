@@ -1,0 +1,12 @@
+/* Tutory 2.0: paleta Abyss/Deep/Electric/Beam/Ice, Gilroy nos títulos, Manrope nos textos. */
+@font-face{font-family:Gilroy;font-weight:800;font-display:swap;src:local("Gilroy-ExtraBold"),url(../assets/fonts/Gilroy-ExtraBold.otf) format("opentype")}
+@font-face{font-family:Gilroy;font-weight:300;font-display:swap;src:local("Gilroy-Light"),url(../assets/fonts/Gilroy-Light.otf) format("opentype")}
+@font-face{font-family:Manrope;font-weight:200 800;font-display:swap;src:url(../assets/fonts/Manrope-VariableFont_wght.ttf) format("truetype")}
+:root{
+  --abyss:#020308;--deep:#0A1A3A;--electric:#0040C8;--beam:#3B7BF5;--ice:#D0DDEF;--paper:#EFF3F9;--white:#fff;
+  --display:Gilroy,"Segoe UI",sans-serif;--text:Manrope,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.75,.2,1);
+}
+.t-ice{--bg:var(--paper);--fg:#07122B;--mut:#3C4A66;--acc:var(--electric);--line:rgba(10,26,58,.16)}
+.t-dark{--bg:var(--abyss);--fg:#F4F7FC;--mut:#B6C3D9;--acc:var(--beam);--line:rgba(208,221,239,.18)}
+.t-deep{--bg:var(--deep);--fg:#F4F7FC;--mut:#C2CFE4;--acc:#7EA8FA;--line:rgba(208,221,239,.2)}

@@ -1,0 +1,31 @@
+#chrome{position:absolute;left:90px;right:90px;top:40px;height:46px;display:flex;align-items:center;justify-content:space-between;z-index:20;color:var(--fg);pointer-events:none;transition:color .2s}
+#chrome .logo{display:block;width:195px;height:46px;color:inherit}
+#chrome .social{display:flex;align-items:center;gap:14px;font-family:var(--display);font-weight:300;font-size:25px;pointer-events:auto}
+#chrome .ic-row{display:flex;gap:9px;color:var(--acc);font-size:24px}
+#chrome a{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none;margin-left:34px}
+#chrome a .ic{color:var(--acc);font-size:28px}
+#chrome a:hover{color:var(--acc)}
+#chrome.first .social{display:none}
+#chrome.first{top:64px;left:120px}
+#chrome.first .logo{width:254px;height:60px}
+
+/* A barra preta e azul do rodapé original vira o indicador de progresso */
+#bar{position:absolute;left:0;right:0;bottom:0;height:16px;background:#000;z-index:30}
+#barFill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--electric);transition:width .6s var(--ease)}
+.t-placeholder{}
+
+#ctrl{position:absolute;left:50%;bottom:32px;transform:translateX(-50%);display:flex;align-items:center;gap:4px;padding:8px 12px;background:rgba(2,3,8,.86);border:1px solid rgba(208,221,239,.24);border-radius:40px;color:#fff;z-index:35;transition:opacity .35s,transform .35s var(--ease)}
+#ctrl button{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;font-size:26px;transition:background .18s,color .18s,transform .18s}
+#ctrl button:hover{background:var(--beam)}
+#ctrl button:active{transform:scale(.9)}
+#ctrl button:disabled{opacity:.3;pointer-events:none}
+#ctrl s{width:1px;height:26px;background:rgba(208,221,239,.28);margin:0 8px}
+#ctrl .count{min-width:84px;text-align:center;font-family:var(--display);font-size:24px}
+#ctrl .count b{font-weight:800}
+#ctrl .count i{font-style:normal;font-weight:300;opacity:.72}
+.idle #ctrl{opacity:0;transform:translateX(-50%) translateY(14px);pointer-events:none}
+.idle{cursor:none}
+.idle .overlay.open{cursor:auto}
+.static #ctrl{display:none}
+#chrome.c2 .social,#chrome.c2 .ic-row,#chrome.c2 a .ic{color:#fff}
+#chrome.c2 a:hover{color:var(--ice)}
